@@ -1,0 +1,85 @@
+- hosts: webservers
+  become: "yes"
+  gather_facts: "yes"
+  tasks:
+  - name: Download package information from all configured sources
+    shell: apt update
+  - name: Update nodejs package
+    shell: "curl -fsSL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
+  - name: Install nodejs
+    apt:
+      name: nodejs
+      state: present
+  - name: Git clone
+    ansible.builtin.git:
+      repo: https://github.com/kostyaf91/bootcamp-app.git
+      dest: /home/azureuser/node-weight-tracker/
+      force: yes
+  - name: Install the project dependencies
+    shell: >
+      cd node-weight-tracker
+      npm install @hapi/hapi@19 @hapi/bell@12 @hapi/boom@9 @hapi/cookie@11
+      @hapi/inert@6 @hapi/joi@17 @hapi/vision@6 dotenv@8 ejs@3 postgres@1
+      npm install --save-dev nodemon@2
+  - name: Install pm2
+    shell: npm install pm2 -g
+  - name: Npm initialization
+    shell: npm init -y
+    args:
+      chdir: /home/azureuser/node-weight-tracker/
+  - name: Running NPM install
+    shell: npm install
+    register: npm_finished
+    args:
+      chdir: /home/azureuser/node-weight-tracker/
+  - name: create env config
+    copy:
+      dest: /home/azureuser/node-weight-tracker/.env
+      content: >
+
+       # Host configuration
+
+       PORT=8080
+
+       HOST=0.0.0.0
+
+
+       # Postgres configuration
+
+       PGHOST=prod-kostya-postgres-flex-server.postgres.database.azure.com
+
+       PGUSERNAME=postgres
+
+       PGDATABASE=postgres
+
+       PGPASSWORD=
+
+       PGPORT=5432
+
+
+       HOST_URL=http://52.188.176.241:8080
+
+       COOKIE_ENCRYPT_PWD=superAwesomePasswordStringThatIsAtLeast32CharactersLong!
+
+       NODE_ENV=development
+
+
+       # Okta configuration
+
+       OKTA_ORG_URL=https://dev-98291338.okta.com
+
+       OKTA_CLIENT_ID=0oa49wrob5MxF93oh5d7
+
+
+       OKTA_CLIENT_SECRET=PJYnZHL8jm3XT0lg4qajsdE5ia-YZIQTknrJWk18
+  - name: Init DB
+    shell: >
+      cd node-weight-tracker
+      npm run initdb
+  - name: Start app
+    shell: pm2 start npm -- run dev pm2 save && pm2 startup
+    args:
+      chdir: '/home/azureuser/node-weight-tracker/'
+
+  - name: save process autorun
+    shell: pm2 save
