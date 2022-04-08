@@ -1,7 +1,7 @@
 # VM scale set creation
 resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
   name                = "${var.tag}-vmss"
-  admin_username      = "azureuser"
+  admin_username      = "ubuntu"
   admin_password      = var.password
   instances           = var.instance_count
   location            = var.rg.location
@@ -20,9 +20,9 @@ resource "azurerm_linux_virtual_machine_scale_set" "vmss" {
       load_balancer_backend_address_pool_ids = [var.lb_backend_pool.id]
       subnet_id                              = var.subnet.id
       primary                                = true
-      public_ip_address {
-        name = "${var.tag}-vmss-ip"
-      }
+      #public_ip_address {
+      #  name = "${var.tag}-vmss-ip"
+      #}
     }
   }
   os_disk {

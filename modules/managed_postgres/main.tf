@@ -1,5 +1,5 @@
 resource "azurerm_private_dns_zone" "private_dns" {
-  name                = "${var.tag}-kostya.postgres.database.azure.com"
+  name                = "${var.tag}.postgres.database.azure.com"
   resource_group_name = var.rg.name
 }
 resource "azurerm_private_dns_zone_virtual_network_link" "dns-link" {

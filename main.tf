@@ -44,3 +44,20 @@ module "managed_postgres" {
   tag               = local.tag
 }
 
+resource "local_file" "test" {
+  filename = "./ansible/vars/${terraform.workspace}-vars.yaml"
+  depends_on = [
+  module.vmss,
+  module.managed_postgres,
+  module.load_balancer,
+  module.ansible_master_vm
+  ]
+  content = <<-EOT
+  ${terraform.workspace}_agent_ip=${module.ansible_master_vm.ansible_ip}
+  ${terraform.workspace}_postgres_pass=${module.managed_postgres.postgres_password}
+  ${terraform.workspace}_vm_pass=${module.vmss.password}
+  ${terraform.workspace}_agent_pass=${module.ansible_master_vm.password}
+  ${terraform.workspace}_lb_ip=${module.load_balancer.lb_ip}
+EOT
+}
+

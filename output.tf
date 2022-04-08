@@ -11,7 +11,7 @@ output "ansible_pass" {
   sensitive = true
 }
 output "lb_ip" {
-  value = module.load_balancer.lp_ip
+  value = module.load_balancer.lb_ip
 }
 output "ansible_master_ip" {
   value = module.ansible_master_vm.ansible_ip

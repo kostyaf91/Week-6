@@ -19,7 +19,7 @@ resource "azurerm_network_interface" "NI" {
   }
 }
 resource "azurerm_linux_virtual_machine" "linux_vm" {
-  admin_username        = "azureuser"
+  admin_username        = "ubuntu"
   location              = var.rg.location
   name                  = var.linux_vm_name
   network_interface_ids = [azurerm_network_interface.NI.id]

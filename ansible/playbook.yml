@@ -2,6 +2,11 @@
   become: "yes"
   gather_facts: "yes"
   tasks:
+  - name: Include all .yml files in vars and all nested directories
+    include_vars:
+      dir: vars
+      extensions:
+        - 'yml'
   - name: Download package information from all configured sources
     shell: apt update
   - name: Update nodejs package
@@ -13,7 +18,7 @@
   - name: Git clone
     ansible.builtin.git:
       repo: https://github.com/kostyaf91/bootcamp-app.git
-      dest: /home/azureuser/node-weight-tracker/
+      dest: /home/ubuntu/node-weight-tracker/
       force: yes
   - name: Install the project dependencies
     shell: >
@@ -26,15 +31,15 @@
   - name: Npm initialization
     shell: npm init -y
     args:
-      chdir: /home/azureuser/node-weight-tracker/
+      chdir: /home/ubuntu/node-weight-tracker/
   - name: Running NPM install
     shell: npm install
     register: npm_finished
     args:
-      chdir: /home/azureuser/node-weight-tracker/
-  - name: create env config
+      chdir: /home/ubuntu/node-weight-tracker/
+  - name: Create env config
     copy:
-      dest: /home/azureuser/node-weight-tracker/.env
+      dest: /home/ubuntu/node-weight-tracker/.env
       content: >
 
        # Host configuration
@@ -46,18 +51,18 @@
 
        # Postgres configuration
 
-       PGHOST=prod-kostya-postgres-flex-server.postgres.database.azure.com
+       PGHOST={{ env }}-kf-postgres-flex-server.postgres.database.azure.com
 
        PGUSERNAME=postgres
 
        PGDATABASE=postgres
 
-       PGPASSWORD=
+       PGPASSWORD={{ postgres_pass }}
 
        PGPORT=5432
 
 
-       HOST_URL=http://52.188.176.241:8080
+       HOST_URL=http://{{ lb_ip }}:8080
 
        COOKIE_ENCRYPT_PWD=superAwesomePasswordStringThatIsAtLeast32CharactersLong!
 
@@ -68,18 +73,18 @@
 
        OKTA_ORG_URL=https://dev-98291338.okta.com
 
-       OKTA_CLIENT_ID=0oa49wrob5MxF93oh5d7
+       OKTA_CLIENT_ID={{ okta_id }}
 
+       OKTA_CLIENT_SECRET={{ okta_secret }}
 
-       OKTA_CLIENT_SECRET=PJYnZHL8jm3XT0lg4qajsdE5ia-YZIQTknrJWk18
   - name: Init DB
-    shell: >
-      cd node-weight-tracker
-      npm run initdb
+    shell: npm run initdb
+    args:
+      chdir: '/home/ubuntu/node-weight-tracker/'
   - name: Start app
     shell: pm2 start npm -- run dev pm2 save && pm2 startup
     args:
-      chdir: '/home/azureuser/node-weight-tracker/'
+      chdir: '/home/ubuntu/node-weight-tracker/'
 
-  - name: save process autorun
+  - name: Save process autorun
     shell: pm2 save

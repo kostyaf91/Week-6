@@ -1,5 +1,5 @@
 variable "tag" {
-  default     = "kostya"
+  default     = "kf"
   description = "Prefix for resources"
 }
 variable "instance_count" {}
